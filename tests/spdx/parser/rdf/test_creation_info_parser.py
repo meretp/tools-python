@@ -16,11 +16,15 @@ import pytest
 from rdflib import Graph, RDF, URIRef
 from rdflib.term import Node
 
+from tests.spdx.fixtures import external_document_ref_fixture, checksum_fixture
+from spdx.writer.rdf.external_document_ref_writer import add_external_document_ref_to_graph
+
 from spdx.model.version import Version
 
 from spdx.model.actor import Actor, ActorType
 
-from spdx.parser.rdf.creation_info_parser import parse_creation_info, parse_namespace_and_spdx_id
+from spdx.parser.rdf.creation_info_parser import parse_creation_info, parse_namespace_and_spdx_id, \
+    parse_external_document_refs
 from spdx.rdfschema.namespace import SPDX_NAMESPACE
 
 
@@ -56,3 +60,16 @@ def test_parse_namespace_and_spdx_id_with_system_exit(triple: Tuple[Node, Node, 
 
     with pytest.raises(SystemExit):
         parse_namespace_and_spdx_id(graph)
+
+
+def test_parse_external_document_refs():
+    graph = Graph().parse(os.path.join(os.path.dirname(__file__), "data/file_to_test_rdf_parser.rdf.xml"))
+    doc_namespace = "https://some.namespace"
+    external_doc_ref_node = graph.value(subject=URIRef(f"{doc_namespace}#SPDXRef-DOCUMENT"),
+                                        predicate=SPDX_NAMESPACE.externalDocumentRef)
+
+    external_document_ref = parse_external_document_refs(external_doc_ref_node, graph, doc_namespace)
+
+    assert external_document_ref.document_ref_id == "DocumentRef-external"
+    assert external_document_ref.checksum == checksum_fixture()
+    assert external_document_ref.document_uri == "https://namespace.com"
