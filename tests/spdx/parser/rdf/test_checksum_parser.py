@@ -11,7 +11,7 @@
 import os
 
 import pytest
-from rdflib import Graph, RDF, URIRef
+from rdflib import Graph, URIRef
 
 from spdx.model.checksum import ChecksumAlgorithm
 from spdx.parser.rdf.checksum_parser import parse_checksum, convert_rdf_to_algorithm

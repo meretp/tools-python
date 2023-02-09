@@ -16,8 +16,7 @@ import pytest
 from rdflib import Graph, RDF, URIRef
 from rdflib.term import Node
 
-from tests.spdx.fixtures import external_document_ref_fixture, checksum_fixture
-from spdx.writer.rdf.external_document_ref_writer import add_external_document_ref_to_graph
+from tests.spdx.fixtures import checksum_fixture
 
 from spdx.model.version import Version
 
