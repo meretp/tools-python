@@ -24,7 +24,7 @@ def parse_extracted_licensing_info(extracted_licensing_info_node: URIRef, graph:
     extracted_text = parse_literal(logger, graph, extracted_licensing_info_node, SPDX_NAMESPACE.extractedText)
     comment = parse_literal(logger, graph, extracted_licensing_info_node, RDFS.comment)
     license_name = parse_literal_or_no_assertion(logger, graph, extracted_licensing_info_node, SPDX_NAMESPACE.name,
-                                                 method_to_apply=str)
+                                                 parsing_method=str)
     cross_references = []
     for (_, _, cross_reference_node) in graph.triples(
         (extracted_licensing_info_node, RDFS.seeAlso, None)):
