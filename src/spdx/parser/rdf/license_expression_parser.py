@@ -16,11 +16,14 @@ from spdx.parser.error import SPDXParsingError
 from spdx.rdfschema.namespace import SPDX_NAMESPACE, LICENSE_NAMESPACE
 
 
-def parse_license_expression(license_expression_node: Node, graph: Graph) -> LicenseExpression:
+def parse_license_expression(license_expression_node: Node, graph: Graph, doc_namespace: str) -> LicenseExpression:
     spdx_licensing = get_spdx_licensing()
     expression = ""
     if license_expression_node.startswith(LICENSE_NAMESPACE):
         expression = license_expression_node.removeprefix(LICENSE_NAMESPACE)
+        return spdx_licensing.parse(expression)
+    if license_expression_node.startswith(doc_namespace):
+        expression = license_expression_node.fragment
         return spdx_licensing.parse(expression)
 
     node_type = graph.value(license_expression_node, RDF.type)
@@ -28,7 +31,7 @@ def parse_license_expression(license_expression_node: Node, graph: Graph) -> Lic
         members = dict()
         for index, (_, _, member_node) in enumerate(
             graph.triples((license_expression_node, SPDX_NAMESPACE.member, None))):
-                members[index] = parse_license_expression(member_node, graph)
+            members[index] = parse_license_expression(member_node, graph, doc_namespace)
         if len(members) > 2:
             raise SPDXParsingError([f"A ConjunctiveLicenseSet can only have two members."])
         expression = f"{members[0]} AND {members[1]}"
@@ -36,17 +39,22 @@ def parse_license_expression(license_expression_node: Node, graph: Graph) -> Lic
         members = dict()
         for index, (_, _, member_node) in enumerate(
             graph.triples((license_expression_node, SPDX_NAMESPACE.member, None))):
-                members[index] = parse_license_expression(member_node, graph)
+            members[index] = parse_license_expression(member_node, graph, doc_namespace)
         if len(members) > 2:
             raise SPDXParsingError([f"A DisjunctiveLicenseSet can only have two members."])
         expression = f"{members[0]} OR {members[1]}"
     if node_type == SPDX_NAMESPACE.WithExceptionOperator:
         members = dict()
-        members[0] = parse_license_expression(graph.value(license_expression_node, SPDX_NAMESPACE.member), graph)
-        members[1] = parse_license_exception(graph.value(license_expression_node, SPDX_NAMESPACE.licenseException), graph)
+        members[0] = parse_license_expression(graph.value(license_expression_node, SPDX_NAMESPACE.member), graph,
+                                              doc_namespace)
+        members[1] = parse_license_exception(graph.value(license_expression_node, SPDX_NAMESPACE.licenseException),
+                                             graph)
         expression = f"{members[0]} WITH {members[1]}"
+    if node_type == SPDX_NAMESPACE.ExtractedLicensingInfo:
+        pass
 
     return spdx_licensing.parse(expression)
+
 
 def parse_license_exception(exception_node: Node, graph: Graph) -> str:
     if exception_node.startswith(LICENSE_NAMESPACE):
@@ -54,5 +62,3 @@ def parse_license_exception(exception_node: Node, graph: Graph) -> str:
     else:
         exception = graph.value(exception_node, SPDX_NAMESPACE.licenseExceptionId).toPython()
     return exception
-
-# need to be able to parse a ListedLicense as in spdx-spec example
