@@ -13,7 +13,7 @@ from rdflib import Graph, URIRef
 from spdx.model.checksum import Checksum, ChecksumAlgorithm
 from spdx.parser.logger import Logger
 from spdx.parser.parsing_functions import construct_or_raise_parsing_error, raise_parsing_error_if_logger_has_messages
-from spdx.parser.rdf.graph_parsing_functions import parse_literal
+from spdx.parser.rdf.graph_parsing_functions import parse_literal, remove_prefix
 from spdx.rdfschema.namespace import SPDX_NAMESPACE
 
 
@@ -29,7 +29,7 @@ def parse_checksum(parent_node: URIRef, graph: Graph) -> Checksum:
 
 
 def convert_rdf_to_algorithm(algorithm: str) -> ChecksumAlgorithm:
-    algorithm = algorithm.removeprefix(SPDX_NAMESPACE.checksumAlgorithm_).upper()
+    algorithm = remove_prefix(algorithm, SPDX_NAMESPACE.checksumAlgorithm_).upper()
     if "BLAKE2B" in algorithm:
         algorithm = algorithm.replace("BLAKE2B", "BLAKE2B_")
 
