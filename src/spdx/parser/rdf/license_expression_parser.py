@@ -49,8 +49,6 @@ def parse_license_expression(license_expression_node: Union[URIRef, BNode, Node]
         members[1] = parse_license_exception(graph.value(license_expression_node, SPDX_NAMESPACE.licenseException),
                                              graph)
         expression = f"{members[0]} WITH {members[1]}"
-    if node_type == SPDX_NAMESPACE.ExtractedLicensingInfo:
-        pass
 
     return spdx_licensing.parse(expression)
 
