@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2023 spdx contributors
 #
 # SPDX-License-Identifier: Apache-2.0
+import os
 from pathlib import Path
 from typing import List
 from unittest import TestCase
@@ -16,7 +17,8 @@ from tests.spdx.fixtures import document_fixture, file_fixture, package_fixture
 try:
     import networkx  # noqa: F401
 except ImportError:
-    pytest.skip("Skip this module as the tests need optional dependencies to run.", allow_module_level=True)
+    if os.environ.get("PYTEST_ALLOW_SKIP", True):
+        pytest.skip("Skip this module as the tests need optional dependencies to run.", allow_module_level=True)
 
 
 @pytest.mark.parametrize(
